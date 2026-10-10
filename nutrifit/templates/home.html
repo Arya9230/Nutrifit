@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}NutriFit: calorie and macro plans you can check{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="wrap grid">
+    <div>
+      <h1>Eat to your numbers.</h1>
+      <p class="lede">Enter your age, height, weight and goal. NutriFit works out your daily calories and macros, then builds a day of meals sized to hit them.</p>
+      <div class="btn-row">
+        <a class="btn btn-lg" href="{{ url_for('form') }}">Build my plan</a>
+        <a class="btn btn-lg btn-ghost" href="{{ url_for('about') }}">See how it works</a>
+      </div>
+      <p class="fine">Takes about 20 seconds. No account, and nothing is saved on a server.</p>
+    </div>
+    <div>
+      {% set plan = example %}
+      {% set title = "Daily targets" %}
+      {% set subtitle = "Example: woman, 28, 165 cm, 62 kg, moderately active, maintaining weight" %}
+      {% set footnote = "Calculated with the same code that builds your plan." %}
+      {% include "_label.html" %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>How close do the meals get?</h2>
+    <p class="lede">We tested the planner on {{ metrics.n_profiles }} simulated people of different ages, sizes, activity levels and goals, and compared it with picking random foods.</p>
+    <div class="compare" role="img" aria-label="Average gap between planned and target calories: NutriFit {{ metrics.planner_mape_pct.Calories }} percent, random picks {{ metrics.random_baseline_mape_pct.Calories }} percent">
+      {% set worst = metrics.random_baseline_mape_pct.Calories %}
+      <div class="compare-row">
+        <span class="who"><strong>NutriFit planner</strong></span>
+        <span class="track"><i style="width: {{ (metrics.planner_mape_pct.Calories / worst * 100)|round(1) }}%"></i></span>
+        <span class="val">{{ metrics.planner_mape_pct.Calories }}%</span>
+      </div>
+      <div class="compare-row base">
+        <span class="who">Random foods</span>
+        <span class="track"><i style="width: 100%"></i></span>
+        <span class="val">{{ metrics.random_baseline_mape_pct.Calories }}%</span>
+      </div>
+    </div>
+    <p class="small muted" style="margin-top:12px">Average gap between a day's planned calories and the target. {{ metrics.calories_within_5pct }}% of plans landed within 5%.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>What you get</h2>
+    <div class="steps" style="margin-top:24px">
+      <div class="step">
+        <h3>Targets from your body</h3>
+        <p>Calories from the Mifflin-St Jeor equation and your activity level, adjusted for your goal, with protein, fat and carbohydrate split to match.</p>
+      </div>
+      <div class="step">
+        <h3>Meals sized to the numbers</h3>
+        <p>Breakfast, lunch, dinner and a snack, each with portions scaled so the day adds up to your targets.</p>
+      </div>
+      <div class="step">
+        <h3>Results you can verify</h3>
+        <p>Every figure on the site is computed, and the About page shows the test results, the data fixes and the limits.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

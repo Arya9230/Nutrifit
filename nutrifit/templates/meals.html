@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Your meals – NutriFit{% endblock %}
+
+{% macro summary_item(label, key, unit, color) %}
+  {% set got = day.totals[key] %}{% set want = day.target[key] %}
+  {% set diff = ((got - want) / want * 100)|round(1) if want else 0 %}
+  <div class="sum-item">
+    <div class="top"><span class="name"><i class="dot {{ color }}"></i>{{ label }}</span><span class="val">{{ '{:,}'.format(got|round|int) }}{{ unit }}</span></div>
+    <div class="meter"><i class="{{ color }}" style="--w: {{ [got / want * 100, 100]|min|round(1) }}%"></i></div>
+    <div class="of">Target {{ '{:,}'.format(want|round|int) }}{{ unit }} <span class="delta">({{ '%+.1f'|format(diff) }}%)</span></div>
+  </div>
+{% endmacro %}
+
+{% block content %}
+<div class="wrap">
+  <div class="page-head">
+    <h1>Your day of meals</h1>
+    <p>Four meals sized to your {{ '{:,}'.format(plan.calories) }} kcal target. Portions are scaled so calories, protein, carbohydrate and fat land close to your daily numbers.</p>
+    <div class="btn-row">
+      <a class="btn" href="{{ url_for('meals', variant=variant + 1) }}">Show another plan</a>
+      <a class="btn btn-ghost" href="{{ url_for('dashboard') }}">Back to targets</a>
+    </div>
+  </div>
+
+  <section class="panel" aria-label="Day total compared with target" style="margin-bottom:24px">
+    <h3>Day total vs your target</h3>
+    <p class="sub">Plan {{ variant + 1 }}. Bars fill as the plan approaches the target.</p>
+    <div class="summary">
+      {{ summary_item('Calories', 'Calories', ' kcal', 'c-ink') }}
+      {{ summary_item('Protein', 'Protein', ' g', 'c-protein') }}
+      {{ summary_item('Carbohydrate', 'Carbs', ' g', 'c-carbs') }}
+      {{ summary_item('Fat', 'Fat', ' g', 'c-fat') }}
+    </div>
+  </section>
+
+  <div class="grid cols-2" style="margin-bottom:24px">
+    {% for meal in day.meals %}
+    <article class="panel meal">
+      <header class="meal-head">
+        <h3>{{ meal.name }}</h3>
+        <span class="kcal">{{ meal.totals.Calories }} <small>kcal</small></span>
+      </header>
+      <table class="items">
+        <thead><tr><th scope="col">Food</th><th scope="col">kcal</th><th scope="col">Protein</th><th scope="col">Carbs</th><th scope="col">Fat</th></tr></thead>
+        <tbody>
+          {% for it in meal['items'] %}
+          <tr>
+            <td class="food">
+              <span class="fname">{{ it.name }}</span>
+              <span class="portion">{{ it.portion }}</span>
+              <span class="tag" title="Nutrient profile found by K-Means clustering">{{ it.profile }}</span>
+            </td>
+            <td>{{ it.Calories }}</td>
+            <td>{{ '%g'|format(it.Protein) }} g</td>
+            <td>{{ '%g'|format(it.Carbs) }} g</td>
+            <td>{{ '%g'|format(it.Fat) }} g</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr><td>Meal total</td><td>{{ meal.totals.Calories }}</td><td>{{ '%g'|format(meal.totals.Protein) }} g</td><td>{{ '%g'|format(meal.totals.Carbs) }} g</td><td>{{ '%g'|format(meal.totals.Fat) }} g</td></tr>
+        </tfoot>
+      </table>
+      <div class="meal-foot">
+        <span>Goal for this meal: {{ meal.target.Calories|round|int }} kcal ({{ '%+.1f'|format(meal.kcal_error_pct) }}%)</span>
+        <span title="Average nutrient-quality score of the foods: more protein and fibre per calorie, less saturated fat.">Nutrient quality {{ meal.quality }}/100</span>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+
+  <p class="small muted prose" style="margin-bottom:48px">Food data comes from an older printed nutrition handbook, so some foods and serving sizes will look dated. Allergies and dietary preferences are not considered yet. See <a href="{{ url_for('about') }}">How it works</a> for the details and limits.</p>
+</div>
+{% endblock %}

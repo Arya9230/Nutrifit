@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}How NutriFit works{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <div class="page-head">
+    <h1>How NutriFit works</h1>
+    <p>What the app calculates, how the models were tested, what was wrong with the data, and where the results should not be trusted.</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="wrap">
+    <h2>From profile to meal plan</h2>
+    <ol class="pipeline" style="margin-top:20px">
+      <li>
+        <div><h3>Estimate energy needs</h3>
+        <p>The Mifflin-St Jeor equation gives resting calories from age, sex, height and weight. An activity factor scales that to daily use, then a goal adjustment applies: about 20% less for weight loss, 10% more for muscle gain. Calories never drop below 1,200 (women) or 1,500 (men).</p></div>
+      </li>
+      <li>
+        <div><h3>Set macro targets</h3>
+        <p>Protein is 1.4, 1.8 or 2.0 g per kg of body weight depending on goal, capped at 35% of calories. Fat is about 27% of calories and carbohydrate takes the rest.</p></div>
+      </li>
+      <li>
+        <div><h3>Profile the foods with K-Means</h3>
+        <p>Each food is described by its calories, protein, carbohydrate, fat and fibre per 100 g. K-Means groups the {{ metrics.data_quality.rows_in_meal_pool }} usable foods into {{ metrics.kmeans.chosen_k }} nutrient profiles. The number of groups was chosen by comparing silhouette scores, not picked by hand.</p></div>
+      </li>
+      <li>
+        <div><h3>Search for the best-fitting day</h3>
+        <p>For each meal the planner tries thousands of combinations of foods and portion sizes and keeps the one closest to that meal's share of your targets, with a small preference for foods that are high in protein and fibre and low in saturated fat. “Show another plan” samples a different set of candidates.</p></div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>Measured results</h2>
+    <p class="lede">Computed by <code>python -m nutrifit.evaluation</code> on {{ metrics.n_profiles }} random profiles (seed {{ metrics.seed }}). Numbers are the average gap between a full day's totals and the user's targets; lower is better.</p>
+
+    <div class="panel" style="overflow-x:auto">
+      <table class="data">
+        <thead><tr><th>Nutrient</th><th class="num">NutriFit planner</th><th class="num">Random foods</th></tr></thead>
+        <tbody>
+          {% for key, label in [('Calories','Calories'),('Protein','Protein'),('Carbs','Carbohydrate'),('Fat','Fat')] %}
+          <tr><td>{{ label }}</td><td class="num">{{ metrics.planner_mape_pct[key] }}%</td><td class="num">{{ metrics.random_baseline_mape_pct[key] }}%</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="stat-line">
+      <div><div class="v">{{ metrics.calories_within_5pct }}%</div><div class="k">of plans within 5% of calorie target</div></div>
+      <div><div class="v">{{ metrics.calories_within_10pct }}%</div><div class="k">within 10%</div></div>
+    </div>
+    <p class="small muted prose" style="margin-top:12px">This measures how well plans match targets. It does not measure health outcomes, which would need a clinical study.</p>
+
+    <h3 style="margin:36px 0 8px;font-size:1.2rem;font-weight:800">Choosing the number of food groups</h3>
+    <p class="muted prose" style="margin-bottom:16px">Silhouette scores for k = 3 to 8. Higher is better. Options that created a tiny cluster (under 4% of foods) were rejected because they only isolate outliers.</p>
+    <div class="panel" style="overflow-x:auto">
+      <table class="data">
+        <thead><tr><th>Groups (k)</th><th class="num">Silhouette</th><th class="num">Smallest group</th><th>Result</th></tr></thead>
+        <tbody>
+          {% for row in metrics.kmeans.sweep %}
+          <tr class="{{ 'chosen' if row.k == metrics.kmeans.chosen_k else ('invalid' if not row.valid else '') }}">
+            <td>{{ row.k }}</td><td class="num">{{ row.silhouette }}</td><td class="num">{{ row.smallest_cluster }} foods</td>
+            <td>{% if row.k == metrics.kmeans.chosen_k %}Chosen{% elif not row.valid %}Rejected: tiny group{% else %}Valid{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted prose" style="margin-top:12px">Resulting profiles:
+      {% for pr in metrics.kmeans.profiles %}{{ pr.name }} ({{ pr.foods }}){{ ", " if not loop.last else "." }}{% endfor %}
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>Cleaning the data</h2>
+    <p class="lede">The food table is a flattened copy of a printed handbook, so it needed repair before it could be used.</p>
+    <div class="stat-line">
+      <div><div class="v">{{ metrics.data_quality.rows_raw }}</div><div class="k">rows in the file</div></div>
+      <div><div class="v">{{ metrics.data_quality.values_repaired }}</div><div class="k">values repaired</div></div>
+      <div><div class="v">{{ metrics.data_quality.rows_clean }}</div><div class="k">rows kept</div></div>
+      <div><div class="v">{{ metrics.data_quality.rows_in_meal_pool }}</div><div class="k">foods used in meals</div></div>
+    </div>
+    <ul class="bullets" style="margin-top:24px">
+      <li>Numbers such as <code>1,373</code> kept their thousands separator and were silently read as zero. They are now parsed correctly.</li>
+      <li>Trace markers (<code>t</code>), ranges (<code>8-44</code>) and unavailable-value sentinels (<code>-1</code>) are handled explicitly instead of being replaced with zero.</li>
+      <li>{{ metrics.data_quality.rows_dropped_missing }} rows with missing core values and {{ metrics.data_quality.rows_dropped_inconsistent }} rows whose calories disagreed with their macros (4×protein + 4×carbs + 9×fat) were dropped.</li>
+      <li>Many rows were fragments of a parent heading (“Lima”, “Raw, grated”). Foods used in meals were renamed by hand, and unusable ones, like raw rice and cream, were removed.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>Limits</h2>
+    <ul class="bullets" style="margin-top:16px">
+      <li>Mifflin-St Jeor is an estimate and is typically within about 10% of measured resting energy use for most adults.</li>
+      <li>The food data is old and small. A larger source such as USDA FoodData Central would improve names, serving sizes and variety.</li>
+      <li>Allergies, vegetarian or vegan diets and cultural food preferences are not modelled yet.</li>
+      <li>NutriFit is an educational project, not medical advice.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>Built with</h2>
+    <p class="muted prose" style="margin-top:8px">Python, Flask, pandas, NumPy and scikit-learn on the back end, with server-rendered templates and hand-written CSS. The nutrition formulas, data cleaning and planner have automated tests.</p>
+  </div>
+</section>
+{% endblock %}

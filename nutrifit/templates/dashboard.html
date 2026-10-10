@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Your targets · NutriFit{% endblock %}
+
+{% block content %}
+{% set p = plan.profile %}
+<div class="wrap">
+  <div class="page-head">
+    <h1>Your daily targets</h1>
+    <p>Goal: {{ p.goal|lower }}. Based on your age ({{ p.age }}), height ({{ '%g'|format(p.height) }} cm), weight ({{ '%g'|format(p.weight) }} kg) and activity level.</p>
+    <div class="btn-row">
+      <a class="btn" href="{{ url_for('meals') }}">See my meals</a>
+      <a class="btn btn-ghost" href="{{ url_for('form') }}">Edit profile</a>
+    </div>
+  </div>
+
+  <div class="grid cols-main" style="margin-bottom:48px">
+    <div>
+      {% set title = "Daily targets" %}
+      {% set subtitle = p.sex ~ ", " ~ p.age ~ ", " ~ ('%g'|format(p.height)) ~ " cm, " ~ ('%g'|format(p.weight)) ~ " kg" %}
+      {% set footnote = "Protein is set by body weight and goal, fat at about 27% of calories, and carbohydrate fills the rest." %}
+      {% include "_label.html" %}
+    </div>
+
+    <div class="stack">
+      <section class="panel">
+        <h3>Where your calories come from</h3>
+        <p class="sub">Your target is built in three steps.</p>
+        <div class="flow">
+          <div class="flow-row">
+            <div class="top"><span class="name">At rest</span><span class="num">{{ '{:,}'.format(plan.bmr) }} kcal</span></div>
+            <div class="meter muted-bar"><i style="--w: {{ (plan.bmr / plan.tdee * 100)|round(1) }}%"></i></div>
+            <p class="note">Basal metabolic rate (Mifflin-St Jeor).</p>
+          </div>
+          <div class="flow-row">
+            <div class="top"><span class="name">With your activity</span><span class="num">{{ '{:,}'.format(plan.tdee) }} kcal</span></div>
+            <div class="meter"><i style="--w: 100%"></i></div>
+            <p class="note">Maintenance level for “{{ p.activity|lower }}”.</p>
+          </div>
+          <div class="flow-row">
+            <div class="top"><span class="name">Your target</span><span class="num">{{ '{:,}'.format(plan.calories) }} kcal</span></div>
+            <div class="meter green"><i style="--w: {{ (plan.calories / plan.tdee * 100)|round(1) }}%"></i></div>
+            <p class="note">
+              {% if plan.adjustment < 0 %}{{ -plan.adjustment }} kcal below maintenance for weight loss.
+              {% elif plan.adjustment > 0 %}{{ plan.adjustment }} kcal above maintenance to support muscle gain.
+              {% else %}Equal to maintenance.{% endif %}
+            </p>
+          </div>
+        </div>
+        {% if plan.adjustment != 0 %}
+        <p class="small muted" style="margin-top:16px">Expected change: about {{ '%+.2f'|format(plan.weekly_change_kg) }} kg per week. Real results vary from person to person.</p>
+        {% endif %}
+      </section>
+
+      <section class="panel">
+        <h3>Body mass index</h3>
+        <p class="sub">A rough screening number. It does not measure body fat.</p>
+        {% set pos = ((([plan.bmi, 15]|max, 40)|min - 15) / 25 * 100)|round(1) %}
+        <div class="bmi-top">
+          <span class="bmi-num">{{ plan.bmi }}</span>
+          <span class="chip {{ plan.bmi_tone }}">{{ plan.bmi_label }}</span>
+        </div>
+        <div class="scale-wrap" role="img" aria-label="BMI {{ plan.bmi }} on a scale from 15 to 40">
+          <div class="scale"><span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span></div>
+          <span class="pin" style="--x: {{ pos }}%" data-v="{{ plan.bmi }}"></span>
+        </div>
+        <div class="scale-labels"><span>15</span><span>18.5</span><span>25</span><span>30</span><span>40</span></div>
+        <p class="small muted" style="margin-top:14px">A healthy BMI at your height is a weight of {{ plan.healthy_range_kg[0] }} to {{ plan.healthy_range_kg[1] }} kg.</p>
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}

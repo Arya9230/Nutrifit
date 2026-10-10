@@ -1,0 +1,29 @@
+{# Nutrition-facts style panel. Expects: plan, title, subtitle #}
+<section class="label" aria-label="{{ title }}">
+  <h2 class="label-title">{{ title }}</h2>
+  <p class="label-sub">{{ subtitle }}</p>
+  <p class="label-amount">Amount per day</p>
+  <div class="label-cal">
+    <span class="name">Calories</span>
+    <span class="value">{{ '{:,}'.format(plan.calories) }}</span>
+  </div>
+  <p class="label-head">% of calories</p>
+  <div class="label-row">
+    <span class="name">Protein <span class="grams">{{ plan.protein_g }} g</span></span>
+    <span></span><span class="pct">{{ plan.macro_pct.protein }}%</span>
+    <span class="bar"><i class="c-protein" style="--w: {{ plan.macro_pct.protein }}%"></i></span>
+  </div>
+  <div class="label-row">
+    <span class="name">Carbohydrate <span class="grams">{{ plan.carbs_g }} g</span></span>
+    <span></span><span class="pct">{{ plan.macro_pct.carbs }}%</span>
+    <span class="bar"><i class="c-carbs" style="--w: {{ plan.macro_pct.carbs }}%"></i></span>
+  </div>
+  <div class="label-row">
+    <span class="name">Fat <span class="grams">{{ plan.fat_g }} g</span></span>
+    <span></span><span class="pct">{{ plan.macro_pct.fat }}%</span>
+    <span class="bar"><i class="c-fat" style="--w: {{ plan.macro_pct.fat }}%"></i></span>
+  </div>
+  <div class="label-row plain"><span class="name">Fibre <span class="grams">at least {{ plan.fiber_g }} g</span></span><span></span></div>
+  <div class="label-row plain"><span class="name">Water <span class="grams">about {{ plan.water_l }} L</span></span><span></span></div>
+  <p class="label-foot">{{ footnote }}</p>
+</section>

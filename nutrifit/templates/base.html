@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}NutriFit{% endblock %}</title>
+  <meta name="description" content="{% block description %}Daily calorie and macro targets from your profile, with a day of meals sized to match.{% endblock %}">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23101b2d'/%3E%3Cpath d='M7 22V10h3l6 8V10h3v12h-3l-6-8v8z' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="{{ url_for('home') }}" aria-label="NutriFit home">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#101b2d"/><path d="M7 22V10h3l6 8V10h3v12h-3l-6-8v8z" fill="#fff"/><rect x="22" y="10" width="3" height="12" fill="#e2a11b"/></svg>
+        NutriFit
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="{{ url_for('dashboard') }}" {% if endpoint == 'dashboard' %}aria-current="page"{% endif %}>Targets</a>
+        <a href="{{ url_for('meals') }}" {% if endpoint == 'meals' %}aria-current="page"{% endif %}>Meals</a>
+        <a href="{{ url_for('about') }}" {% if endpoint == 'about' %}aria-current="page"{% endif %}>How it works</a>
+        <a class="btn" href="{{ url_for('form') }}">{{ 'Edit profile' if has_profile else 'Build my plan' }}</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>{% block content %}{% endblock %}</main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>NutriFit is a portfolio project. Estimates only, not medical advice.</span>
+      <span>Your profile stays in your browser session; nothing is stored on the server.</span>
+    </div>
+  </footer>
+</body>
+</html>

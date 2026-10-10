@@ -1,0 +1,86 @@
+{
+  "n_profiles": 200,
+  "seed": 7,
+  "planner_mape_pct": {
+    "Calories": 1.3,
+    "Protein": 6.1,
+    "Carbs": 3.1,
+    "Fat": 6.9
+  },
+  "random_baseline_mape_pct": {
+    "Calories": 24.5,
+    "Protein": 29.6,
+    "Carbs": 36.2,
+    "Fat": 37.6
+  },
+  "calories_within_5pct": 93.5,
+  "calories_within_10pct": 99.0,
+  "kmeans": {
+    "chosen_k": 4,
+    "silhouette": 0.537,
+    "sweep": [
+      {
+        "k": 3,
+        "silhouette": 0.509,
+        "smallest_cluster": 20,
+        "valid": true
+      },
+      {
+        "k": 4,
+        "silhouette": 0.537,
+        "smallest_cluster": 10,
+        "valid": true
+      },
+      {
+        "k": 5,
+        "silhouette": 0.489,
+        "smallest_cluster": 10,
+        "valid": true
+      },
+      {
+        "k": 6,
+        "silhouette": 0.443,
+        "smallest_cluster": 10,
+        "valid": true
+      },
+      {
+        "k": 7,
+        "silhouette": 0.499,
+        "smallest_cluster": 6,
+        "valid": false
+      },
+      {
+        "k": 8,
+        "silhouette": 0.47,
+        "smallest_cluster": 3,
+        "valid": false
+      }
+    ],
+    "profiles": [
+      {
+        "name": "Low calorie density",
+        "foods": 98
+      },
+      {
+        "name": "Protein & fat",
+        "foods": 48
+      },
+      {
+        "name": "Fat-dense",
+        "foods": 10
+      },
+      {
+        "name": "Carb-rich",
+        "foods": 20
+      }
+    ]
+  },
+  "data_quality": {
+    "rows_raw": 335,
+    "rows_clean": 320,
+    "rows_dropped_missing": 4,
+    "rows_dropped_inconsistent": 11,
+    "values_repaired": 214,
+    "rows_in_meal_pool": 176
+  }
+}

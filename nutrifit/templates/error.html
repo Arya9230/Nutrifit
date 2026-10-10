@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Error {{ code }} – NutriFit{% endblock %}
+{% block content %}
+<div class="wrap error-page">
+  <div class="code">{{ code }}</div>
+  <p>{{ message }}</p>
+  <div class="btn-row">
+    <a class="btn" href="{{ url_for('home') }}">Go to home</a>
+    <a class="btn btn-ghost" href="{{ url_for('form') }}">Build a plan</a>
+  </div>
+</div>
+{% endblock %}

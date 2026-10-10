@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Your profile · NutriFit{% endblock %}
+
+{% macro field_error(name) %}{% if errors.get(name) %}<span class="error" id="{{ name }}-err" role="alert">{{ errors[name] }}</span>{% endif %}{% endmacro %}
+
+{% block content %}
+<div class="wrap">
+  <div class="page-head">
+    <h1>Your profile</h1>
+    <p>Five quick details. We use them to calculate your daily energy and macro targets.</p>
+  </div>
+
+  <div class="grid cols-main" style="margin-bottom:48px">
+    <div class="prose">
+      <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:8px">What happens next</h2>
+      <p class="muted">You will see your targets first, then a day of meals matched to them. You can edit your profile at any time.</p>
+      <h2 style="font-size:1.25rem;font-weight:800;margin:24px 0 8px">Why these details</h2>
+      <p class="muted">Age, height, weight and sex feed the Mifflin-St Jeor equation, which estimates the calories your body uses at rest. Activity level scales that up, and your goal sets the surplus or deficit. The sex field is only used for that equation.</p>
+      <p class="muted" style="margin-top:12px">For adults aged 18 to 80. If you have a medical condition or are pregnant, talk to a clinician or dietitian instead.</p>
+    </div>
+
+    <form class="panel" method="post" action="{{ url_for('form') }}" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      {% if errors %}<div class="alert" role="alert">Fix the highlighted fields and try again.</div>{% endif %}
+
+      <div class="form-grid">
+        <div class="field {% if errors.age %}has-error{% endif %}">
+          <label for="age">Age</label>
+          <div class="input-wrap"><input id="age" name="age" type="number" inputmode="numeric" min="18" max="80" step="1" required placeholder="28" value="{{ values.get('age', '') }}" {% if errors.age %}aria-invalid="true" aria-describedby="age-err"{% endif %}><span class="unit">years</span></div>
+          {{ field_error('age') }}
+        </div>
+
+        <div class="field {% if errors.sex %}has-error{% endif %}">
+          <label for="sex">Sex</label>
+          <select id="sex" name="sex" required>
+            {% for s in ['Female', 'Male'] %}<option value="{{ s }}" {% if values.get('sex') == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+          </select>
+          {{ field_error('sex') }}
+        </div>
+
+        <div class="field {% if errors.height %}has-error{% endif %}">
+          <label for="height">Height</label>
+          <div class="input-wrap"><input id="height" name="height" type="number" inputmode="decimal" min="120" max="230" step="0.1" required placeholder="165" value="{{ values.get('height', '') }}" {% if errors.height %}aria-invalid="true" aria-describedby="height-err"{% endif %}><span class="unit">cm</span></div>
+          {{ field_error('height') }}
+        </div>
+
+        <div class="field {% if errors.weight %}has-error{% endif %}">
+          <label for="weight">Weight</label>
+          <div class="input-wrap"><input id="weight" name="weight" type="number" inputmode="decimal" min="30" max="250" step="0.1" required placeholder="62" value="{{ values.get('weight', '') }}" {% if errors.weight %}aria-invalid="true" aria-describedby="weight-err"{% endif %}><span class="unit">kg</span></div>
+          {{ field_error('weight') }}
+        </div>
+
+        <div class="field full {% if errors.activity %}has-error{% endif %}">
+          <label for="activity">Activity level</label>
+          <select id="activity" name="activity" required>
+            {% for name, (factor, desc) in activities.items() %}
+            <option value="{{ name }}" {% if (values.get('activity') or 'Moderately Active') == name %}selected{% endif %}>{{ name }}: {{ desc }}</option>
+            {% endfor %}
+          </select>
+          {{ field_error('activity') }}
+        </div>
+
+        <fieldset class="field full {% if errors.goal %}has-error{% endif %}">
+          <legend>Goal</legend>
+          <div class="choices three" style="margin-top:6px">
+            {% for name, desc in goals.items() %}
+            <label class="choice">
+              <input type="radio" name="goal" value="{{ name }}" {% if (values.get('goal') or 'Maintenance') == name %}checked{% endif %}>
+              <span class="box"><span class="t">{{ name }}</span><span class="d">{{ desc }}</span></span>
+            </label>
+            {% endfor %}
+          </div>
+          {{ field_error('goal') }}
+        </fieldset>
+
+        <div class="field full"><button class="btn btn-lg" type="submit">See my targets</button></div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
